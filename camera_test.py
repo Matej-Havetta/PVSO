@@ -57,11 +57,14 @@ image4 = cv2.imread("img4.jpg")
 
 #get dimensions
 dimensions = image1.shape
+height, width, numchanel = dimensions
 
 #copy image 2 for rotation
 rot_image = image2.copy()
 #rotate image 90 deg
-rot_image = np.transpose(rot_image, (1, 0, 2))
+for row in range(height):
+        for col in range(width):
+            rot_image[row][col], rot_image[col][row] = image2[col][row], image2[row][col]
 
 # Split into channels
 blue, green, red = cv2.split(image3)
