@@ -27,14 +27,31 @@ def calibrate_camera(image_files, pattern_size=(9, 6), square_size=0.025):
 
     for fname in image_files:
         img = cv2.imread(fname)
+        if img is None:
+            print(f"Error: Unable to read image file {fname}")
+            continue
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         ret, corners = cv2.findChessboardCorners(gray, pattern_size, None)
         if ret:
             img_points.append(corners)
             obj_points.append(objp)
+        else:
+            print(f"Warning: Chessboard corners not found in image {fname}")
+
+    if not img_points:
+        raise ValueError("Error: No chessboard corners found in any image.")
 
     ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(obj_points, img_points, gray.shape[::-1], None, None)
+    if not ret:
+        raise RuntimeError("Error: Camera calibration failed.")
+
+    fx = mtx[0, 0]
+    fy = mtx[1, 1]
+    cx = mtx[0, 2]
+    cy = mtx[1, 2]
+
     print(f'Camera Matrix:\n{mtx}')
+    print(f'fx: {fx}, fy: {fy}, cx: {cx}, cy: {cy}')
     return mtx, dist
 
 
@@ -56,8 +73,10 @@ def detect_circles(image):
 
 # Hlavný kód
 frame = capture_image()
-mtx, dist = calibrate_camera(['img1.jpg','img2.jpg','img3.jpg','img4.jpg','img5.jpg','img6.jpg','img7.jpg','img8.jpg','img9.jpg','img10.jpg','img11.jpg','img12.jpg'])
+images = ['img1.jpg','img2.jpg','img3.jpg','img4.jpg','img5.jpg','img6.jpg','img7.jpg','img8.jpg','img9.jpg','img10.jpg','img11.jpg','img12.jpg']
+mtx, dist = calibrate_camera(images)
 detected_circles = detect_circles(frame)
+cv2.resizeWindow('Detected Circles', 800, 600)
 cv2.imshow('Detected Circles', detected_circles)
 cv2.waitKey(0)
 cv2.destroyAllWindows()
