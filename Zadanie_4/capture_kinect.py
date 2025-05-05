@@ -1,36 +1,39 @@
 import ctypes
-import _ctypes
-import sys
-import numpy as np
 import cv2
-import pygame
-from pykinect2 import PyKinectV2
+import numpy as np
+import os
 from pykinect2 import PyKinectRuntime
+from pykinect2 import PyKinectV2
 
-# Inicializácia Kinect runtime
-kinect = PyKinectRuntime.PyKinectRuntime(PyKinectV2.FrameSourceTypes_Color | PyKinectV2.FrameSourceTypes_Depth)
+# Inicializuj Kinect
+kinect = PyKinectRuntime.PyKinectRuntime(PyKinectV2.FrameSourceTypes_Color |
+                                         PyKinectV2.FrameSourceTypes_Depth)
 
-# Čakanie na dáta
+print("Spusti prehrávanie .xef v Kinect Studio 2.0 a stlač 's' pre uloženie snímky")
+
 while True:
-    if kinect.has_new_color_frame() and kinect.has_new_depth_frame():
-        # Získaj color frame
+    if kinect.has_new_color_frame():
         color_frame = kinect.get_last_color_frame()
-        color_frame = color_frame.reshape((1080, 1920, 4)).astype(np.uint8)
-        color_frame = color_frame[:, :, :3]  # Vynechať alfa kanál (BGR)
+        color_image = color_frame.reshape((1080, 1920, 4)).astype(np.uint8)
+        color_bgr = cv2.cvtColor(color_image, cv2.COLOR_RGBA2BGR)
 
-        # Ulož farbu
-        color_frame_rgb = cv2.cvtColor(color_frame, cv2.COLOR_BGR2RGB)
-        cv2.imwrite("captured_color.png", color_frame_rgb)
-
-        # Získaj depth frame
+    if kinect.has_new_depth_frame():
         depth_frame = kinect.get_last_depth_frame()
-        depth_frame = depth_frame.reshape((424, 512)).astype(np.uint16)
+        depth_image = depth_frame.reshape((424, 512)).astype(np.uint16)
+        depth_colored = cv2.convertScaleAbs(depth_image, alpha=0.03)
 
-        # Ulož depth
-        cv2.imwrite("captured_depth.png", depth_frame)
+    # Zobrazenie
+    cv2.imshow('Color Frame', color_bgr)
+    cv2.imshow('Depth Frame', depth_colored)
 
-        print("Color and Depth frame captured and saved.")
+    key = cv2.waitKey(1)
+    if key == ord('s'):
+        cv2.imwrite("color.png", color_bgr)
+        cv2.imwrite("depth.png", depth_image)
+        print("Uložené: color.png a depth.png")
+        break
+    elif key == 27:  # ESC
         break
 
-# Uvoľnenie Kinectu
 kinect.close()
+cv2.destroyAllWindows()
