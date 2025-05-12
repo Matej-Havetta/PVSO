@@ -30,7 +30,7 @@ for image in images:
     # If found, add object points, image points (after refining them)
     if ret == True:
         objpoints.append(objp)
-        corners2 = cv.cornerSubPix(gray, corners, (11, 11), (-1, -1), criteria)
+        corners2 =  (gray, corners, (11, 11), (-1, -1), criteria)
         imgpoints.append(corners2)
 
         # Draw and display the corners

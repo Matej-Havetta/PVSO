@@ -1,21 +1,36 @@
 import open3d as o3d
 import numpy as np
+import cv2
 
-# 1. Načítanie farebného a hĺbkového obrázku
-color_raw = o3d.io.read_image("color.png")
-depth_raw = o3d.io.read_image("depth.png")
 
-# 2. Vytvorenie RGBD obrázku
+
+# Načítanie farbného a hĺbkového obrazu
+color_raw = cv2.imread("color2.png")  # BGR formát
+depth_raw = cv2.imread("depth2.png", cv2.IMREAD_UNCHANGED)  # 16-bit hĺbkový obraz
+
+# Preráskaluj farbný obraz na veľkosť hĺbkového
+depth_height, depth_width = depth_raw.shape
+color_resized = cv2.resize(color_raw, (depth_width, depth_height))  # (šírka, výška)
+
+# Prevod na Open3D formát
+color_o3d = o3d.geometry.Image(cv2.cvtColor(color_resized, cv2.COLOR_BGR2RGB))
+depth_o3d = o3d.geometry.Image(depth_raw)
+
+# Vytvorenie RGBD obrazu
 rgbd_image = o3d.geometry.RGBDImage.create_from_color_and_depth(
-    color_raw, depth_raw,
-    depth_scale=1000.0,  # podľa Kinect V2: 1 jednotka = 1 mm
-    depth_trunc=4.0,     # orezanie hĺbky za 4 m
-    convert_rgb_to_intensity=False
+    color_o3d, depth_o3d, convert_rgb_to_intensity=False
 )
+# # 2. Vytvorenie RGBD obrázku
+# rgbd_image = o3d.geometry.RGBDImage.create_from_color_and_depth(
+#     color_raw, depth_raw,
+#     depth_scale=1000.0,  # podľa Kinect V2: 1 jednotka = 1 mm
+#     depth_trunc=4.0,     # orezanie hĺbky za 4 m
+#     convert_rgb_to_intensity=False
+# )
 
 # 3. Intrinzické parametre Kinect V2 (približné)
 intrinsic = o3d.camera.PinholeCameraIntrinsic()
-intrinsic.set_intrinsics(width=512, height=424, fx=365.456, fy=365.456, cx=254.878, cy=205.395)
+intrinsic.set_intrinsics(width=512, height=424, fx=143.3, fy=97.5, cx=80.7, cy=67.9)
 
 # 4. Vytvorenie mračna bodov
 pcd = o3d.geometry.PointCloud.create_from_rgbd_image(rgbd_image, intrinsic)

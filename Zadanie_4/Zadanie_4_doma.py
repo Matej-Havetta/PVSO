@@ -5,7 +5,7 @@ from sklearn.cluster import DBSCAN
 from sklearn.cluster import KMeans
 
 # Načítanie mračna bodov
-pcd = o3d.io.read_point_cloud("my_pts.ply")
+pcd = o3d.io.read_point_cloud("TLS_kitchen.ply")
 
 # Zobrazenie mračna bodov
 o3d.visualization.draw_geometries([pcd])
@@ -38,7 +38,7 @@ pcd_clean.colors = o3d.utility.Vector3dVector(colors[:, :3])
 o3d.visualization.draw_geometries([pcd_clean])
 
 # Definovanie počtu klastrov
-k = 5
+k = 2
 kmeans = KMeans(n_clusters=k)
 labels = kmeans.fit_predict(points)
 

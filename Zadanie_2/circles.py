@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-img = cv2.imread('coins.jpg')
+img = cv2.imread('img15.jpg')
 if img is None:
     print("Chyba: Obrázok sa nepodarilo načítať.")
 
@@ -15,6 +15,8 @@ gray = cv2.GaussianBlur(gray, (9, 9), 2, 2)
 
 
 circles = cv2.HoughCircles(gray, cv2.HOUGH_GRADIENT_ALT, 1, 30, param1=100, param2=0.5, minRadius=10, maxRadius=150)
+
+print(circles, "\n---------------------")
 
 circles = np.uint16(np.around(circles))
 for i in circles[0,:]:
